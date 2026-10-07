@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word Factory · مصنع الكلمات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF4FB; --ink:#1F2A44; --muted:#5B6B86; --card:#FFFFFF;
+  --machine:#2B4C7E; --machine-ink:#FFFFFF; --belt:#FFC93C; --belt-ink:#1F2A44;
+  --root:#D6336C; --ok:#2F9E44; --bad:#E8590C; --line:#C9DCEB;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101827; --ink:#E8EEF8; --muted:#9AA8C0; --card:#1A2438;
+    --machine:#3A5F99; --belt:#FFC93C; --root:#FF6B9A; --line:#2C3A55;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101827; --ink:#E8EEF8; --muted:#9AA8C0; --card:#1A2438;
+  --machine:#3A5F99; --belt:#FFC93C; --root:#FF6B9A; --line:#2C3A55;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;font-size:1.1rem;line-height:1.4}
+.ar{font-family:"Noto Naskh Arabic","Geeza Pro","Arial",serif;direction:rtl}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+header{text-align:center;padding:8px 0 4px}
+header h1{margin:0;font-size:2rem;font-weight:800;letter-spacing:-.5px}
+header .ar{font-size:1.4rem;color:var(--muted);margin-top:-4px}
+section[hidden]{display:none}
+h2{font-size:1.25rem;margin:18px 0 8px;font-weight:800}
+p{margin:6px 0}
+.muted{color:var(--muted)}
+button{font:inherit;color:inherit;cursor:pointer;border:0}
+button:focus-visible{outline:3px solid var(--root);outline-offset:3px}
+.big{display:block;width:100%;padding:14px;border-radius:18px;background:var(--belt);color:var(--belt-ink);
+  font-size:1.3rem;font-weight:800;box-shadow:0 5px 0 #C99A1A}
+.big:active{transform:translateY(3px);box-shadow:0 2px 0 #C99A1A}
+.big[disabled]{opacity:.45;cursor:not-allowed}
+.ghost{background:transparent;border:2px solid var(--line);border-radius:14px;padding:8px 14px;font-weight:700}
+
+/* intro */
+.demo{background:var(--card);border-radius:22px;padding:18px;margin:14px 0;text-align:center;border:2px solid var(--line)}
+.demo .root{font-size:2.6rem;color:var(--root);letter-spacing:.3em}
+.demo .arrow{font-size:1.6rem;color:var(--muted)}
+.demo .words{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;font-size:1.9rem}
+.demo .words small{display:block;font-family:"Baloo 2",sans-serif;font-size:.9rem;color:var(--muted);direction:ltr}
+
+/* pickers */
+.row{display:grid;gap:10px}
+.roots{grid-template-columns:repeat(2,1fr)}
+.molds{grid-template-columns:repeat(4,1fr)}
+.pick{background:var(--card);border:3px solid var(--line);border-radius:18px;padding:10px 6px;text-align:center}
+.pick[aria-pressed="true"]{border-color:var(--root);box-shadow:0 0 0 3px color-mix(in srgb,var(--root) 25%,transparent)}
+.pick .ar{font-size:2rem;color:var(--root);letter-spacing:.25em;display:block}
+.pick .em{font-size:1.9rem;display:block}
+.pick .lbl{font-size:.95rem;font-weight:700}
+
+/* machine */
+.machine{background:var(--machine);color:var(--machine-ink);border-radius:26px 26px 14px 14px;padding:16px;margin-top:18px;position:relative}
+.machine .top{display:flex;justify-content:space-between;align-items:center;font-weight:800}
+.slots{display:flex;flex-direction:row-reverse;justify-content:center;gap:10px;margin:12px 0}
+.slot{width:64px;height:64px;border-radius:16px;background:rgba(255,255,255,.12);border:2px dashed rgba(255,255,255,.45);
+  display:grid;place-items:center;font-size:2.1rem}
+.slot.fill{background:#fff;color:#D6336C;border-style:solid;animation:drop .45s cubic-bezier(.3,1.5,.6,1) both}
+.moldtag{text-align:center;font-weight:700;opacity:.9;min-height:1.4em}
+.shake{animation:shake .5s}
+@keyframes drop{from{transform:translateY(-50px);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{0%,100%{transform:none}20%{transform:rotate(-1.5deg)}40%{transform:rotate(1.5deg)}60%{transform:rotate(-1deg)}80%{transform:rotate(1deg)}}
+.chute{background:var(--card);border:3px solid var(--line);border-top:0;border-radius:0 0 22px 22px;margin:0 14px;padding:16px;text-align:center;min-height:150px}
+.chute .word{font-size:3.2rem;line-height:1.5}
+.chute .mean{font-size:1.25rem;font-weight:700}
+.chute .tag{display:inline-block;margin-top:6px;padding:2px 12px;border-radius:999px;background:var(--belt);color:var(--belt-ink);font-weight:800}
+.pop{animation:pop .4s ease-out}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.r{color:var(--root)}
+.say{background:var(--machine);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;margin-top:8px}
+
+/* collection */
+.progress{height:14px;background:var(--card);border:2px solid var(--line);border-radius:999px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--root);width:0;transition:width .4s}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+.tile{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px;text-align:center;min-height:86px}
+.tile .em{font-size:1.4rem}
+.tile .ar{font-size:1.35rem;display:block}
+.tile.locked{opacity:.5;display:grid;place-items:center;font-size:1.8rem;color:var(--muted)}
+
+/* quiz */
+.qcard{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px;text-align:center;margin-top:10px}
+.qword{font-size:3.2rem;line-height:1.6}
+.opts{display:grid;gap:10px;margin-top:14px}
+.opt{background:var(--card);border:3px solid var(--line);border-radius:16px;padding:10px;font-size:1.9rem}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.feedback{min-height:2.6em;margin-top:10px;font-weight:700}
+.stars{font-size:1.5rem;letter-spacing:2px;text-align:center}
+.endstars{font-size:3rem;text-align:center;margin:10px 0}
+.note{font-size:.95rem;color:var(--muted);border-top:2px dashed var(--line);margin-top:26px;padding-top:12px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:12px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+@media (max-width:420px){ .molds{grid-template-columns:repeat(2,1fr)} .chute .word{font-size:2.7rem} }
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Word Factory 🏭</h1>
+    <div class="ar">مَصْنَعُ الكَلِمات</div>
+  </header>
+
+  <!-- INTRO -->
+  <section id="intro">
+    <p>Many Arabic words grow from just <b>3 letters</b>. We call them the <b>root</b>. Put the root into a mold and a new word comes out!</p>
+    <div class="demo">
+      <div class="root ar">ك ت ب</div>
+      <div class="arrow">⬇️</div>
+      <div class="words ar">
+        <div>كِتاب<small>📕 book</small></div>
+        <div>كاتِب<small>🖋️ writer</small></div>
+        <div>مَكْتَبَة<small>📚 library</small></div>
+      </div>
+    </div>
+    <p class="muted">Look for the pink letters. They are the root, hiding inside every word.</p>
+    <p style="margin-top:14px"><button class="big" id="startBtn">Start the factory</button></p>
+  </section>
+
+  <!-- FACTORY -->
+  <section id="factory" hidden>
+    <h2>1. Pick 3 root letters</h2>
+    <div class="row roots" id="roots"></div>
+    <h2>2. Pick a mold</h2>
+    <div class="row molds" id="molds"></div>
+
+    <div class="machine" id="machine">
+      <div class="top"><span>⚙️ Word machine</span><span id="foundCount">0 / 15</span></div>
+      <div class="slots" id="slots"><div class="slot"></div><div class="slot"></div><div class="slot"></div></div>
+      <div class="moldtag" id="moldTag">Pick letters and a mold</div>
+      <button class="big" id="makeBtn" style="margin-top:10px">Make a word!</button>
+    </div>
+    <div class="chute" id="chute"><p class="muted" style="margin-top:40px">Your word comes out here 👇</p></div>
+
+    <h2>Your word collection</h2>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="grid" id="grid"></div>
+    <p style="margin-top:16px"><button class="big" id="toQuiz" disabled>Find 8 words to unlock the challenge</button></p>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" hidden>
+    <h2 id="qNum">Challenge 1 of 6</h2>
+    <div class="stars" id="qStars"></div>
+    <div class="qcard">
+      <p id="qPrompt" style="font-weight:700;font-size:1.2rem"></p>
+      <div id="qShow"></div>
+      <div class="opts" id="qOpts"></div>
+      <div class="feedback" id="qFeed"></div>
+      <button class="big" id="qNext" hidden>Next</button>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="end" hidden>
+    <h2 style="text-align:center">Factory shift complete! 🎉</h2>
+    <div class="endstars" id="endStars"></div>
+    <p style="text-align:center;font-size:1.25rem;font-weight:700" id="endMsg"></p>
+    <div class="demo">
+      <p style="font-weight:700">Remember</p>
+      <p>Same 3 root letters → words with a <b>connected meaning</b>.</p>
+      <p class="ar" style="font-size:1.8rem"><span class="r">دَرَسَ</span> · مُ<span class="r">دَرِّس</span> · مَ<span class="r">دْرَسَ</span>ة</p>
+    </div>
+    <p><button class="big" id="againBtn">Play the challenge again</button></p>
+    <p style="text-align:center"><button class="ghost" id="backBtn">Back to the factory</button></p>
+  </section>
+
+  <p class="note">Teacher tip: tap 🔊 to hear each word. Sound uses the device's own Arabic voice, so quality varies by device. Ask pupils to say each new word aloud and point to the pink root letters.</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const ROOTS=[
+  {id:'ktb',letters:['ك','ت','ب'],en:'writing'},
+  {id:'drs',letters:['د','ر','س'],en:'studying'},
+  {id:'lab',letters:['ل','ع','ب'],en:'playing'},
+  {id:'tbx',letters:['ط','ب','خ'],en:'cooking'}
+];
+const MOLDS=[
+  {id:'act',em:'🏃',lbl:'Action',long:'Action: he did it'},
+  {id:'person',em:'🧑',lbl:'Person',long:'Person: who does it'},
+  {id:'place',em:'🏠',lbl:'Place',long:'Place: where it happens'},
+  {id:'thing',em:'🎁',lbl:'Thing',long:'Thing: an object or idea'}
+];
+// segments: [text, isRoot]
+const WORDS=[
+  {root:'ktb',mold:'act',segs:[['كَ',1],['تَ',1],['بَ',1]],en:'he wrote',em:'✍️'},
+  {root:'ktb',mold:'person',segs:[['ك',1],['ا',0],['تِ',1],['ب',1]],en:'writer',em:'🖋️'},
+  {root:'ktb',mold:'place',segs:[['مَ',0],['كْ',1],['تَ',1],['بَ',1],['ة',0]],en:'library',em:'📚'},
+  {root:'ktb',mold:'thing',segs:[['كِ',1],['ت',1],['ا',0],['ب',1]],en:'book',em:'📕'},
+  {root:'drs',mold:'act',segs:[['دَ',1],['رَ',1],['سَ',1]],en:'he studied',em:'📖'},
+  {root:'drs',mold:'person',segs:[['مُ',0],['دَ',1],['ر\u0651\u0650',1],['س',1]],en:'teacher',em:'👩‍🏫'},
+  {root:'drs',mold:'place',segs:[['مَ',0],['دْ',1],['رَ',1],['سَ',1],['ة',0]],en:'school',em:'🏫'},
+  {root:'drs',mold:'thing',segs:[['دَ',1],['رْ',1],['س',1]],en:'lesson',em:'📝'},
+  {root:'lab',mold:'act',segs:[['لَ',1],['عِ',1],['بَ',1]],en:'he played',em:'⚽'},
+  {root:'lab',mold:'person',segs:[['لا',1],['عِ',1],['ب',1]],en:'player',em:'🏃'},
+  {root:'lab',mold:'place',segs:[['مَ',0],['لْ',1],['عَ',1],['ب',1]],en:'playground',em:'🏟️'},
+  {root:'lab',mold:'thing',segs:[['لُ',1],['عْ',1],['بَ',1],['ة',0]],en:'toy',em:'🧸'},
+  {root:'tbx',mold:'act',segs:[['طَ',1],['بَ',1],['خَ',1]],en:'he cooked',em:'🍳'},
+  {root:'tbx',mold:'person',segs:[['طَ',1],['ب\u0651\u064E',1],['ا',0],['خ',1]],en:'cook (chef)',em:'👨‍🍳'},
+  {root:'tbx',mold:'place',segs:[['مَ',0],['طْ',1],['بَ',1],['خ',1]],en:'kitchen',em:'🍽️'}
+];
+const TOTAL=WORDS.length, UNLOCK=8;
+const $=id=>document.getElementById(id);
+const key=w=>w.root+'-'+w.mold;
+const plain=w=>w.segs.map(s=>s[0]).join('');
+const colored=w=>w.segs.map(s=>s[1]?`<span class="r">${s[0]}</span>`:s[0]).join('');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let selRoot=null, selMold=null, found=new Set(), busy=false;
+
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+function speak(t){
+  if(!('speechSynthesis' in window)){toast('Sound is not available on this device');return}
+  try{
+    const u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';u.rate=.8;
+    const v=speechSynthesis.getVoices().find(v=>(v.lang||'').toLowerCase().startsWith('ar'));
+    if(v)u.voice=v;
+    speechSynthesis.cancel();speechSynthesis.speak(u);
+  }catch(e){toast('Sound is not available on this device')}
+}
+if('speechSynthesis' in window){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}
+
+function renderPickers(){
+  $('roots').innerHTML=ROOTS.map(r=>`<button class="pick" data-root="${r.id}" aria-pressed="${selRoot===r.id}">
+    <span class="ar">${r.letters.join(' ')}</span><span class="lbl">${r.en}</span></button>`).join('');
+  $('molds').innerHTML=MOLDS.map(m=>`<button class="pick" data-mold="${m.id}" aria-pressed="${selMold===m.id}">
+    <span class="em">${m.em}</span><span class="lbl">${m.lbl}</span></button>`).join('');
+  document.querySelectorAll('[data-root]').forEach(b=>b.onclick=()=>{selRoot=b.dataset.root;renderPickers();fillSlots(false)});
+  document.querySelectorAll('[data-mold]').forEach(b=>b.onclick=()=>{selMold=b.dataset.mold;renderPickers();fillSlots(false)});
+}
+function fillSlots(animate){
+  const r=ROOTS.find(x=>x.id===selRoot);
+  const slots=[...$('slots').children];
+  slots.forEach((s,i)=>{
+    s.className='slot';s.textContent='';s.style.animationDelay='';
+    if(r){s.textContent=r.letters[i];s.classList.add('fill');s.classList.add('ar');
+      if(animate)s.style.animationDelay=(i*.15)+'s'; else s.style.animation='none';}
+  });
+  const m=MOLDS.find(x=>x.id===selMold);
+  $('moldTag').textContent=m?`${m.em} ${m.long}`:'Now pick a mold';
+  if(!r&&!m)$('moldTag').textContent='Pick letters and a mold';
+}
+function make(){
+  if(busy)return;
+  if(!selRoot){toast('Pick 3 root letters first');return}
+  if(!selMold){toast('Pick a mold first');return}
+  busy=true;
+  [...$('slots').children].forEach(s=>s.style.animation='');
+  fillSlots(true);
+  const mac=$('machine');mac.classList.remove('shake');void mac.offsetWidth;
+  setTimeout(()=>mac.classList.add('shake'),450);
+  $('chute').innerHTML='<p class="muted" style="margin-top:50px">⚙️ Making…</p>';
+  setTimeout(()=>{
+    busy=false;
+    const w=WORDS.find(x=>x.root===selRoot&&x.mold===selMold);
+    if(!w){
+      $('chute').innerHTML=`<div class="pop"><div style="font-size:3rem">💨</div>
+        <p class="mean">No word from this mold today.</p><p class="muted">Try a different mold!</p></div>`;
+      return;
+    }
+    const isNew=!found.has(key(w));found.add(key(w));
+    $('chute').innerHTML=`<div class="pop">
+      <div class="word ar">${colored(w)}</div>
+      <div class="mean">${w.em} ${w.en}</div>
+      ${isNew?'<span class="tag">New word! ⭐</span>':'<span class="muted">Already in your collection</span>'}
+      <div><button class="say" id="sayBtn">🔊 Hear it</button></div></div>`;
+    $('sayBtn').onclick=()=>speak(plain(w));
+    speak(plain(w));
+    renderCollection();
+    if(isNew&&found.size===UNLOCK)toast('Challenge unlocked! 🔓');
+    if(isNew&&found.size===TOTAL)toast('You found all 15 words! 🏆');
+  },1100);
+}
+function renderCollection(){
+  $('foundCount').textContent=`${found.size} / ${TOTAL}`;
+  $('bar').style.width=(found.size/TOTAL*100)+'%';
+  $('grid').innerHTML=WORDS.map(w=>found.has(key(w))
+    ?`<button class="tile" data-k="${key(w)}" aria-label="Hear ${w.en}"><div class="em">${w.em}</div><span class="ar">${colored(w)}</span><small>${w.en}</small></button>`
+    :`<div class="tile locked" aria-label="Not found yet">?</div>`).join('');
+  document.querySelectorAll('.tile[data-k]').forEach(t=>t.onclick=()=>speak(plain(WORDS.find(w=>key(w)===t.dataset.k))));
+  const b=$('toQuiz');
+  if(found.size>=UNLOCK){b.disabled=false;b.textContent='Start the challenge 🏁'}
+  else{b.disabled=true;b.textContent=`Find ${UNLOCK} words to unlock the challenge (${found.size}/${UNLOCK})`}
+}
+
+/* QUIZ */
+let Q=[],qi=0,score=0;
+function buildQuiz(){
+  const qs=[];
+  // A: which root is hiding?
+  shuffle(WORDS).slice(0,2).forEach(w=>qs.push({type:'root',w,
+    prompt:'Which 3 letters are hiding in this word?',
+    opts:shuffle(ROOTS.filter(r=>r.id!==w.root)).slice(0,2).concat(ROOTS.find(r=>r.id===w.root)),correct:w.root}));
+  // B: which word means...
+  shuffle(WORDS).slice(0,2).forEach(w=>{
+    const others=shuffle(WORDS.filter(x=>x.en!==w.en)).slice(0,2);
+    qs.push({type:'mean',w,prompt:`Which word means ${w.em} ${w.en}?`,opts:others.concat(w),correct:key(w)});
+  });
+  // C: which one is a place / person
+  shuffle(ROOTS).slice(0,2).forEach((r,i)=>{
+    const moldId=i===0?'place':'person';
+    const m=MOLDS.find(x=>x.id===moldId);
+    const target=WORDS.find(w=>w.root===r.id&&w.mold===moldId);
+    const others=shuffle(WORDS.filter(w=>w.root===r.id&&w.mold!==moldId)).slice(0,2);
+    qs.push({type:'mold',w:target,prompt:`Which word is a ${m.lbl.toUpperCase()}? ${m.em}`,opts:others.concat(target),correct:key(target)});
+  });
+  return shuffle(qs);
+}
+function startQuiz(){Q=buildQuiz();qi=0;score=0;show('quiz');renderQ()}
+function renderQ(){
+  const q=Q[qi];
+  $('qNum').textContent=`Challenge ${qi+1} of ${Q.length}`;
+  $('qStars').textContent='⭐'.repeat(score)+'☆'.repeat(Q.length-score);
+  $('qPrompt').textContent=q.prompt;
+  $('qShow').innerHTML=q.type==='root'?`<div class="qword ar">${plain(q.w)}</div>`:'';
+  $('qFeed').textContent='';$('qNext').hidden=true;
+  const opts=shuffle(q.opts);
+  $('qOpts').innerHTML=opts.map(o=>q.type==='root'
+    ?`<button class="opt ar" data-v="${o.id}">${o.letters.join(' ')}</button>`
+    :`<button class="opt ar" data-v="${key(o)}">${plain(o)}</button>`).join('');
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b,q));
+}
+function answer(btn,q){
+  const all=[...document.querySelectorAll('.opt')];
+  all.forEach(b=>b.disabled=true);
+  const ok=btn.dataset.v===q.correct;
+  if(ok){score++;btn.classList.add('right')}
+  else{btn.classList.add('wrong');all.find(b=>b.dataset.v===q.correct).classList.add('right')}
+  $('qShow').innerHTML=`<div class="qword ar">${colored(q.w)}</div>`;
+  $('qFeed').innerHTML=(ok?'✅ Yes! ':'Good try! ')+`<span class="ar" style="font-size:1.4rem">${plain(q.w)}</span> = ${q.w.em} ${q.w.en}`;
+  $('qStars').textContent='⭐'.repeat(score)+'☆'.repeat(Q.length-score);
+  speak(plain(q.w));
+  $('qNext').hidden=false;$('qNext').textContent=qi===Q.length-1?'See my stars':'Next';
+}
+$('qNext').onclick=()=>{qi++;if(qi<Q.length)renderQ();else endScreen()};
+function endScreen(){
+  show('end');
+  $('endStars').textContent='⭐'.repeat(score)+'☆'.repeat(Q.length-score);
+  $('endMsg').textContent=score===Q.length?'Perfect! You are a root word expert!':score>=4?'Great work, word builder!':'Good effort! Make more words and try again.';
+}
+function show(id){['intro','factory','quiz','end'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0)}
+
+$('startBtn').onclick=()=>show('factory');
+$('makeBtn').onclick=make;
+$('toQuiz').onclick=startQuiz;
+$('againBtn').onclick=startQuiz;
+$('backBtn').onclick=()=>show('factory');
+renderPickers();renderCollection();
+</script>
+</body>
+</html>
